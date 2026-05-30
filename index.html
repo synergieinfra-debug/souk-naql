@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#0d47a1"/>
+<title>سوق النقل واللوجستيك — Souq An-Naql</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bleu:#1565c0; --bleu2:#0d47a1; --bleu3:#1976d2; --bleup:#e3f2fd; --bleuborder:#bbdefb;
+  --or:#d97706; --orc:#fbbf24; --orp:#fff7ed; --orborder:#fed7aa;
+  --gris:#8a9ab0; --gris2:#4b5563; --gris2p:#f3f4f6; --border:#e2e8f0; --rouge:#c0392b;
+  --ink:#0f1b2d; --vert:#1f9d57;
+  --sh:0 2px 12px rgba(13,71,161,.09); --shd:0 8px 32px rgba(13,71,161,.18);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Tajawal',sans-serif;background:#f5f7fa;color:var(--ink);max-width:430px;margin:0 auto;min-height:100vh;overflow-x:hidden;direction:rtl}
+button{font-family:inherit;cursor:pointer}
+img{display:block;max-width:100%}
+.hidden{display:none!important}
+#splash{position:fixed;inset:0;background:linear-gradient(160deg,var(--bleu),var(--bleu2));display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9000;transition:opacity .7s;max-width:430px;margin:0 auto}
+#splash.out{opacity:0;pointer-events:none}
+.sp-logo{width:92px;height:92px;border-radius:24px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 14px 40px rgba(0,0,0,.3);margin-bottom:14px}
+.sp-logo svg{width:58px;height:58px}
+.sp-title{font-family:'Amiri',serif;font-size:2.5rem;color:var(--orc);margin:0;font-weight:700}
+.sp-sub{color:rgba(255,255,255,.85);font-size:.95rem;margin:4px 0 18px}
+.sp-bar{width:170px;height:3px;background:rgba(255,255,255,.18);border-radius:2px;overflow:hidden}
+.sp-fill{height:100%;background:linear-gradient(90deg,var(--or),var(--orc));animation:load 1.6s ease forwards}
+@keyframes load{to{width:100%}}
+.toast{position:fixed;top:74px;left:50%;transform:translateX(-50%) translateY(-20px);background:var(--bleu2);color:#fff;padding:11px 22px;border-radius:24px;font-size:.85rem;font-weight:700;z-index:9999;opacity:0;pointer-events:none;transition:all .3s;white-space:nowrap;max-width:88vw;text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.form-input,.form-select,.form-textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'Tajawal',sans-serif;font-size:.92rem;color:var(--ink);background:#fff;outline:none;transition:border-color .2s;direction:rtl;text-align:right}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--bleu)}
+.form-textarea{resize:vertical;min-height:84px}
+.form-label{display:block;font-size:.82rem;font-weight:700;margin-bottom:6px;color:var(--gris2)}
+.fld{margin-bottom:14px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn-primary{width:100%;padding:13px;background:linear-gradient(135deg,var(--bleu),var(--bleu2));color:#fff;border:none;border-radius:10px;font-family:'Tajawal',sans-serif;font-size:1rem;font-weight:800;cursor:pointer;margin-top:6px;transition:.2s;box-shadow:0 4px 16px rgba(21,101,192,.3)}
+.btn-primary:active{transform:scale(.98)}
+.btn-gold{background:linear-gradient(135deg,var(--or),var(--orc));color:#1a1a2e;box-shadow:0 4px 16px rgba(217,119,6,.3)}
+.btn-wa{background:#25D366;box-shadow:0 4px 16px rgba(37,211,102,.3)}
+.btn-call{background:linear-gradient(135deg,var(--bleu),var(--bleu2))}
+.auth-error{background:#fdecea;border:1px solid #f5c6c6;border-radius:8px;padding:10px 14px;font-size:.83rem;color:var(--rouge);margin-bottom:12px;text-align:right;display:none}
+.auth-error.show{display:block}
+.auth-wrap{min-height:100vh;background:linear-gradient(160deg,var(--bleu),var(--bleu2));display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.auth-card{background:#fff;border-radius:20px;padding:26px 22px;width:100%;max-width:380px;box-shadow:var(--shd)}
+.auth-logo{text-align:center;margin-bottom:20px}
+.auth-logo .badge{width:62px;height:62px;border-radius:18px;background:var(--bleup);display:inline-flex;align-items:center;justify-content:center;margin-bottom:8px}
+.auth-logo .badge svg{width:36px;height:36px}
+.auth-logo-title{font-family:'Amiri',serif;font-size:1.7rem;color:var(--bleu2);font-weight:700}
+.auth-logo-sub{font-size:.8rem;color:var(--gris)}
+.auth-tab{display:flex;background:#f1f5f9;border-radius:10px;padding:3px;margin-bottom:20px}
+.auth-tab-btn{flex:1;padding:9px;border:none;background:transparent;border-radius:8px;font-family:'Tajawal',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;color:var(--gris);transition:.2s}
+.auth-tab-btn.active{background:#fff;color:var(--bleu2);box-shadow:var(--sh)}
+.home-header{background:linear-gradient(135deg,var(--bleu),var(--bleu2));padding:18px 16px 14px;position:relative;overflow:hidden;border-radius:0 0 20px 20px}
+.home-header::after{content:"";position:absolute;left:-40px;bottom:-40px;width:140px;height:140px;background:radial-gradient(circle,var(--orc) 0%,transparent 70%);opacity:.25}
+.hh-top{display:flex;align-items:center;gap:10px;color:#fff;position:relative;z-index:2}
+.hh-logo{display:flex;align-items:center;gap:9px;font-family:'Amiri',serif;font-weight:700;font-size:1.3rem}
+.hh-logo .mk{width:36px;height:36px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center}
+.hh-logo .mk svg{width:23px;height:23px}
+.hh-bell{margin-inline-start:auto;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.15);border:none;display:flex;align-items:center;justify-content:center;position:relative}
+.hh-bell svg{width:19px;height:19px;stroke:#fff;fill:none}
+.hh-search{margin-top:13px;background:#fff;border-radius:12px;display:flex;align-items:center;gap:9px;padding:11px 13px;position:relative;z-index:2}
+.hh-search svg{width:18px;height:18px;stroke:var(--gris);fill:none;flex-shrink:0}
+.hh-search input{border:none;outline:none;flex:1;font-family:inherit;font-size:.9rem;color:var(--ink);background:none}
+.home-tabs{display:flex;background:rgba(0,0,0,.18);border-radius:10px;padding:3px;margin-top:13px;position:relative;z-index:2}
+.home-tab{flex:1;padding:9px;border:none;background:transparent;border-radius:8px;font-family:'Tajawal',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;color:rgba(255,255,255,.65);transition:.2s}
+.home-tab.active{background:#fff;color:var(--bleu2)}
+.content{padding:14px 14px 96px}
+.hero{background:linear-gradient(135deg,var(--bleu3),var(--bleu2));border-radius:16px;padding:15px;color:#fff;margin-bottom:14px;position:relative;overflow:hidden}
+.hero h3{margin:0 0 3px;font-size:1.05rem;font-weight:800}
+.hero p{margin:0;font-size:.8rem;opacity:.9;line-height:1.6}
+.cats-scroll{display:flex;gap:9px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:none}
+.cats-scroll::-webkit-scrollbar{display:none}
+.cat-chip{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:5px;width:64px;text-align:center;background:none;border:none}
+.cat-chip .ic{width:54px;height:54px;border-radius:16px;background:#fff;box-shadow:var(--sh);display:flex;align-items:center;justify-content:center;font-size:24px;border:1.5px solid transparent;transition:.15s}
+.cat-chip.on .ic{border-color:var(--bleu);background:var(--bleup)}
+.cat-chip span{font-size:.62rem;font-weight:700;line-height:1.2;color:var(--gris2)}
+.chips{display:flex;gap:7px;overflow-x:auto;padding:6px 2px 10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.ann-card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:var(--sh);cursor:pointer;transition:.15s;border:1px solid var(--border);border-right:3px solid var(--bleu);margin-bottom:12px}
+.ann-card:active{transform:scale(.99)}
+.ann-card.dem{border-right-color:var(--or);background:linear-gradient(135deg,#fff,var(--orp))}
+.ann-pp{width:100%;height:104px;background:linear-gradient(135deg,var(--bleup),var(--bleuborder));display:flex;align-items:center;justify-content:center;font-size:2.6rem;position:relative}
+.ann-pp.dem{background:linear-gradient(135deg,var(--orp),var(--orborder))}
+.ann-pp img{width:100%;height:100%;object-fit:cover}
+.ann-tag{position:absolute;top:8px;right:8px;font-size:.6rem;font-weight:800;padding:3px 9px;border-radius:8px;background:rgba(255,255,255,.92)}
+.ann-tag.off{color:var(--bleu2)} .ann-tag.dem{color:var(--or)}
+.ann-urgent{position:absolute;top:8px;left:8px;font-size:.58rem;font-weight:800;padding:3px 8px;border-radius:8px;background:var(--rouge);color:#fff}
+.ann-body{padding:11px 12px}
+.ann-titre{font-size:.88rem;font-weight:700;margin:0 0 6px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ann-route{display:flex;align-items:center;gap:5px;font-size:.74rem;color:var(--gris2);margin-bottom:8px}
+.ann-route svg{width:13px;height:13px;stroke:var(--bleu);fill:none;flex-shrink:0}
+.ann-foot{display:flex;align-items:center;gap:8px;font-size:.7rem;color:var(--gris)}
+.ann-prix{font-family:'Amiri',serif;font-weight:700;font-size:1rem;color:var(--bleu2);margin-inline-start:auto}
+.ann-prix small{font-size:.65rem;color:var(--gris)}
+.ann-verif{display:inline-flex;align-items:center;gap:3px;color:var(--vert);font-weight:700}
+.ann-verif svg{width:12px;height:12px;fill:var(--vert)}
+.skel-card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:var(--sh);margin-bottom:12px;border:1px solid var(--border)}
+.skeleton{background:linear-gradient(90deg,#eef2f6 25%,#e2e8f0 50%,#eef2f6 75%);background-size:200% 100%;animation:shimmer 1.3s infinite}
+@keyframes shimmer{to{background-position:-200% 0}}
+.skel-img{height:104px} .skel-line{height:12px;border-radius:6px;margin-bottom:8px} .skel-line.short{width:60%}
+.detail-hero{height:190px;display:flex;align-items:center;justify-content:center;font-size:5rem;position:relative}
+.detail-hero img{width:100%;height:100%;object-fit:cover}
+.dh-btn{position:absolute;top:14px;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);border:none;display:flex;align-items:center;justify-content:center}
+.dh-btn svg{width:20px;height:20px;stroke:#fff;fill:none}
+.dh-back{right:14px} .dh-share{left:14px}
+.detail-body{padding:16px 16px 110px}
+.d-tag{display:inline-block;font-size:.68rem;font-weight:800;padding:3px 11px;border-radius:8px;margin-bottom:8px}
+.d-tag.off{background:var(--bleup);color:var(--bleu2)} .d-tag.dem{background:var(--orp);color:var(--or)}
+.d-title{font-family:'Amiri',serif;font-size:1.4rem;font-weight:700;margin:0 0 12px;line-height:1.45}
+.d-row{display:flex;align-items:center;gap:11px;padding:12px 0;border-bottom:1px solid var(--border)}
+.d-row .ic{width:38px;height:38px;border-radius:11px;background:var(--bleup);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.d-row .ic svg{width:18px;height:18px;stroke:var(--bleu);fill:none}
+.d-row .lbl{font-size:.72rem;color:var(--gris)} .d-row .val{font-weight:700;font-size:.92rem}
+.d-desc{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;margin:14px 0;font-size:.9rem;line-height:1.85;color:#37444f}
+.profile-mini{display:flex;align-items:center;gap:11px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px}
+.avatar{width:46px;height:46px;border-radius:50%;background:var(--bleu);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Amiri',serif;font-weight:700;font-size:1.2rem}
+.stars{color:var(--orc);font-size:.8rem;letter-spacing:1px}
+.contact-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;padding:10px 14px calc(14px + env(safe-area-inset-bottom));display:flex;gap:9px;background:linear-gradient(to top,#f5f7fa 72%,transparent);z-index:120}
+.cbtn{flex:1;border:none;border-radius:12px;padding:13px;font-family:'Tajawal';font-weight:800;font-size:.92rem;color:#fff;display:flex;align-items:center;justify-content:center;gap:7px;text-decoration:none}
+.cbtn svg{width:18px;height:18px}
+.cbtn.ghost{flex:0 0 50px;background:#fff;border:1px solid var(--border)} .cbtn.ghost svg{stroke:var(--rouge);fill:none}
+.pub-header{background:linear-gradient(135deg,var(--bleu),var(--bleu2));padding:16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50}
+.pub-header button{background:rgba(255,255,255,.18);border:none;width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center}
+.pub-header button svg{width:20px;height:20px;stroke:#fff;fill:none}
+.pub-title{font-family:'Amiri',serif;font-size:1.25rem;color:var(--orc)}
+.pub-body{padding:16px}
+.pub-type-tabs{display:flex;background:#f1f5f9;border-radius:10px;padding:3px;margin-bottom:18px}
+.pub-type-btn{flex:1;padding:11px;border:none;background:transparent;border-radius:8px;font-family:'Tajawal';font-size:.85rem;font-weight:700;cursor:pointer;color:var(--gris);transition:.2s}
+.pub-type-btn.active-off{background:var(--bleu);color:#fff}
+.pub-type-btn.active-dem{background:var(--or);color:#fff}
+.photo-zone{border:2px dashed var(--bleuborder);border-radius:14px;padding:22px;text-align:center;cursor:pointer;background:var(--bleup);margin-bottom:16px;color:var(--bleu2);font-weight:700;font-size:.85rem}
+.photo-zone svg{width:30px;height:30px;stroke:var(--bleu);fill:none;margin-bottom:6px}
+.photo-zone img{max-height:120px;margin:0 auto;border-radius:10px}
+.prof-head{background:linear-gradient(135deg,var(--bleu),var(--bleu2));padding:26px 18px;text-align:center;color:#fff;border-radius:0 0 22px 22px}
+.prof-head .avatar{width:74px;height:74px;font-size:1.8rem;margin:0 auto 10px;background:var(--orc);color:var(--bleu2)}
+.prof-head h3{margin:0;font-family:'Amiri',serif;font-size:1.5rem}
+.prof-head .sub{opacity:.85;font-size:.82rem;margin-top:3px}
+.prof-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px}
+.pstat{background:#fff;border:1px solid var(--border);border-radius:14px;padding:13px;text-align:center}
+.pstat b{display:block;font-family:'Amiri',serif;font-size:1.4rem;color:var(--bleu2)} .pstat span{font-size:.72rem;color:var(--gris)}
+.menu-item{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--border);border-radius:13px;padding:14px;margin:0 14px 9px;font-size:.9rem;font-weight:700;cursor:pointer}
+.menu-item .ic{width:36px;height:36px;border-radius:10px;background:var(--bleup);display:flex;align-items:center;justify-content:center}
+.menu-item .ic svg{width:18px;height:18px;stroke:var(--bleu);fill:none}
+.menu-item .arr{margin-inline-start:auto;color:var(--gris)} .menu-item .arr svg{width:18px;height:18px;stroke:var(--gris);fill:none;transform:scaleX(-1)}
+.fab{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--or),var(--orc));border:4px solid #f5f7fa;box-shadow:0 6px 22px rgba(217,119,6,.5);display:flex;align-items:center;justify-content:center;z-index:200}
+.fab svg{width:26px;height:26px;stroke:#1a1a2e;stroke-width:2.6;fill:none}
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-top:1px solid var(--border);display:flex;padding:8px 0 calc(16px + env(safe-area-inset-bottom));z-index:100;box-shadow:0 -4px 20px rgba(13,71,161,.06)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:none;position:relative;padding:4px 0}
+.nav-item svg{width:22px;height:22px;stroke:var(--gris);fill:none}
+.nav-label{font-size:.6rem;font-weight:700;color:var(--gris)}
+.nav-item.active svg{stroke:var(--bleu)} .nav-item.active .nav-label{color:var(--bleu)}
+.nav-item.active::before{content:'';position:absolute;top:-8px;width:28px;height:3px;background:var(--bleu);border-radius:0 0 3px 3px}
+.nav-spacer{flex:1}
+.sheet-ov{position:fixed;inset:0;background:rgba(13,30,50,.5);z-index:300;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:#fff;width:100%;max-width:430px;border-radius:22px 22px 0 0;padding:18px 16px calc(20px + env(safe-area-inset-bottom));animation:up .3s cubic-bezier(.2,.9,.3,1)}
+@keyframes up{from{transform:translateY(100%)}to{transform:none}}
+.sheet .grab{width:42px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 14px}
+.sheet h3{margin:0 0 14px;font-family:'Amiri',serif;font-size:1.2rem;color:var(--bleu2)}
+.sheet-opt{display:flex;align-items:center;gap:12px;padding:13px;border-radius:13px;border:1px solid var(--border);margin-bottom:9px;cursor:pointer}
+.sheet-opt .ic{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem}
+.sheet-opt b{font-family:'Tajawal';font-size:.92rem} .sheet-opt span{font-size:.74rem;color:var(--gris);display:block}
+.empty{text-align:center;padding:50px 20px;color:var(--gris)}
+.empty .ic{font-size:3rem;margin-bottom:10px}
+.screen{display:none} .screen.active{display:block}
+.config-banner{background:var(--orp);border:1px solid var(--orborder);color:var(--or);border-radius:10px;padding:9px 12px;font-size:.74rem;font-weight:700;margin-bottom:12px;text-align:center}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="sp-logo"><svg viewBox="0 0 24 24" fill="none"><path d="M2 7h12v8H2z" fill="#1565c0"/><path d="M14 10h4l3 3v2h-7z" fill="#fbbf24"/><circle cx="6.5" cy="17" r="2" fill="#0f1b2d"/><circle cx="17.5" cy="17" r="2" fill="#0f1b2d"/></svg></div>
+  <h1 class="sp-title">سوق النقل واللوجستيك</h1>
+  <p class="sp-sub">النقل، الشحن، والتوصيل فبلاصة وحدة</p>
+  <div class="sp-bar"><div class="sp-fill"></div></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="screen" id="sc-auth">
+  <div class="auth-wrap"><div class="auth-card">
+    <div class="auth-logo">
+      <span class="badge"><svg viewBox="0 0 24 24" fill="none"><path d="M2 7h12v8H2z" fill="#1565c0"/><path d="M14 10h4l3 3v2h-7z" fill="#fbbf24"/><circle cx="6.5" cy="17" r="2" fill="#0f1b2d"/><circle cx="17.5" cy="17" r="2" fill="#0f1b2d"/></svg></span>
+      <div class="auth-logo-title">سوق النقل واللوجستيك</div>
+      <div class="auth-logo-sub">دخل ولقى الناقل ولا الخدمة اللي محتاج</div>
+    </div>
+    <div class="auth-tab">
+      <button class="auth-tab-btn active" onclick="switchAuth('login')">دخول</button>
+      <button class="auth-tab-btn" onclick="switchAuth('register')">حساب جديد</button>
+    </div>
+    <div class="auth-error" id="auth-error"></div>
+    <div id="form-login">
+      <div class="fld"><label class="form-label">رقم الهاتف</label><input class="form-input" id="login-tel" type="tel" placeholder="06XXXXXXXX"></div>
+      <div class="fld"><label class="form-label">الاسم</label><input class="form-input" id="login-nom" placeholder="الاسم الكامل"></div>
+      <button class="btn-primary" onclick="login()">دخول</button>
+    </div>
+    <div id="form-register" style="display:none">
+      <div class="fld"><label class="form-label">الاسم الكامل / اسم الشركة</label><input class="form-input" id="reg-nom" placeholder="مثلاً: النقل السريع"></div>
+      <div class="fld"><label class="form-label">رقم الهاتف (واتساب)</label><input class="form-input" id="reg-tel" type="tel" placeholder="06XXXXXXXX"></div>
+      <div class="fld"><label class="form-label">المدينة</label>
+        <select class="form-select" id="reg-region">
+          <option value="">اختار المدينة</option>
+          <option>الدار البيضاء</option><option>الرباط</option><option>مراكش</option><option>طنجة</option>
+          <option>أكادير</option><option>فاس</option><option>مكناس</option><option>وجدة</option>
+          <option>القنيطرة</option><option>تطوان</option><option>سطات</option><option>بني ملال</option><option>أخرى</option>
+        </select></div>
+      <div class="fld"><label class="form-label">نوع الحساب</label>
+        <select class="form-select" id="reg-type">
+          <option value="client">زبون (محتاج النقل)</option>
+          <option value="transporteur">ناقل (عندي مركبة)</option>
+          <option value="societe">شركة نقل / لوجستيك</option>
+        </select></div>
+      <button class="btn-primary btn-gold" onclick="register()">سجّل دابا</button>
+    </div>
+  </div></div>
+</div>
+
+<div class="screen" id="sc-home">
+  <div class="home-header">
+    <div class="hh-top">
+      <div class="hh-logo"><span class="mk"><svg viewBox="0 0 24 24" fill="none"><path d="M2 7h12v8H2z" fill="#1565c0"/><path d="M14 10h4l3 3v2h-7z" fill="#fbbf24"/><circle cx="6.5" cy="17" r="2" fill="#0f1b2d"/><circle cx="17.5" cy="17" r="2" fill="#0f1b2d"/></svg></span> سوق النقل</div>
+      <button class="hh-bell" onclick="toast('ما كاينش إشعارات جديدة')"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg></button>
+    </div>
+    <div class="hh-search"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="home-search" placeholder="قلب على كاميو، فوركون، ميني بيس..." oninput="onSearch(this.value)"></div>
+    <div class="home-tabs">
+      <button class="home-tab active" id="tab-off" onclick="setTab('offre')">العروض 🚛</button>
+      <button class="home-tab" id="tab-dem" onclick="setTab('demande')">الطلبات 📦</button>
+    </div>
+  </div>
+  <div class="content">
+    <div id="config-banner"></div>
+    <div class="hero"><h3>لقا الناقل أو الخدمة فدقائق</h3><p>عندك حمولة؟ باغي تنقل العمال؟ محتاج فوركون ولا كاميو؟ كلشي هنا.</p></div>
+    <div class="cats-scroll" id="cats"></div>
+    <div id="ann-list"></div>
+  </div>
+</div>
+
+<div class="screen" id="sc-detail"></div>
+
+<div class="screen" id="sc-publish">
+  <div class="pub-header">
+    <button onclick="goScreen('home')"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button>
+    <span class="pub-title">نشر إعلان جديد</span>
+  </div>
+  <div class="pub-body">
+    <div class="pub-type-tabs">
+      <button class="pub-type-btn active-off" id="pt-off" onclick="setPubType('offre')">أنا ناقل (عرض)</button>
+      <button class="pub-type-btn" id="pt-dem" onclick="setPubType('demande')">عندي حمولة (طلب)</button>
+    </div>
+    <div class="photo-zone" onclick="document.getElementById('pub-photo').click()" id="photo-zone">
+      <svg viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>
+      <div>زيد تصويرة (اختياري)</div>
+    </div>
+    <input type="file" id="pub-photo" accept="image/*" style="display:none" onchange="onPhoto(this)">
+    <div class="fld"><label class="form-label">عنوان الإعلان</label><input class="form-input" id="pub-titre" placeholder="مثلاً: كاميو 10 طن متوفر للنقل"></div>
+    <div class="fld"><label class="form-label">القسم</label><select class="form-select" id="pub-cat"></select></div>
+    <div class="two">
+      <div class="fld"><label class="form-label" id="lbl-from">مدينة التوفّر</label><input class="form-input" id="pub-from" placeholder="الدار البيضاء"></div>
+      <div class="fld"><label class="form-label" id="lbl-to">المناطق المغطّاة</label><input class="form-input" id="pub-to" placeholder="النواحي"></div>
+    </div>
+    <div class="two">
+      <div class="fld"><label class="form-label" id="lbl-veh">نوع المركبة</label><input class="form-input" id="pub-veh" placeholder="كاميو 10 طن"></div>
+      <div class="fld"><label class="form-label">التاريخ</label><input class="form-input" id="pub-date" placeholder="متوفر / الخميس"></div>
+    </div>
+    <div class="two">
+      <div class="fld"><label class="form-label">الثمن / الميزانية</label><input class="form-input" id="pub-prix" type="number" placeholder="مثلاً 1500"></div>
+      <div class="fld"><label class="form-label">الوحدة</label>
+        <select class="form-select" id="pub-unite"><option value="درهم">درهم</option><option value="د/اليوم">د/اليوم</option><option value="د/الشهر">د/الشهر</option><option value="حسب الاتفاق">حسب الاتفاق</option></select></div>
+    </div>
+    <div class="fld"><label class="form-label">التفاصيل</label><textarea class="form-textarea" id="pub-desc" placeholder="نوع البضاعة، التحميل/التفريغ، الشروط..."></textarea></div>
+    <button class="btn-primary btn-gold" onclick="publish()" id="pub-submit">نشر الإعلان دابا</button>
+    <div style="height:30px"></div>
+  </div>
+</div>
+
+<div class="screen" id="sc-profile"></div>
+
+<button class="fab hidden" id="fab" onclick="openSheet()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+<nav class="bnav hidden" id="bnav">
+  <button class="nav-item active" id="ni-home" onclick="goScreen('home')"><svg viewBox="0 0 24 24" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg><span class="nav-label">الرئيسية</span></button>
+  <button class="nav-item" id="ni-search" onclick="goScreen('home');document.getElementById('home-search').focus()"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><span class="nav-label">تصفّح</span></button>
+  <div class="nav-spacer"></div>
+  <button class="nav-item" id="ni-mine" onclick="loadMine()"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M9 11H3v10h6zM21 3h-6v18h6zM15 7H9v14h6z"/></svg><span class="nav-label">إعلاناتي</span></button>
+  <button class="nav-item" id="ni-prof" onclick="loadProfile()"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span class="nav-label">حسابي</span></button>
+</nav>
+
+<script>
+/* ===== SUPABASE CONFIG — REMPLACER ===== */
+const SUPABASE_URL = 'https://VOTRE-PROJET.supabase.co';
+const SUPABASE_KEY = 'VOTRE_CLE_ANON_PUBLIQUE';
+const DEMO = SUPABASE_URL.includes('VOTRE-PROJET');
+let sb = null;
+if(!DEMO){ try{ sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }catch(e){} }
+
+const CATS = [
+  {id:'all',ar:'الكل',em:'🗂️'},{id:'marchandise',ar:'نقل البضائع',em:'📦'},{id:'frigo',ar:'النقل المبرّد',em:'❄️'},
+  {id:'personnel',ar:'نقل العمال',em:'🚌'},{id:'kira',ar:'كراء مع سائق',em:'🔑'},{id:'livraison',ar:'التوصيل',em:'🛵'},
+  {id:'interurbain',ar:'بين المدن',em:'🛣️'},{id:'stockage',ar:'التخزين',em:'🏬'},{id:'manutention',ar:'المناولة',em:'🏗️'},
+  {id:'demenagement',ar:'نقل الأثاث',em:'🛋️'},{id:'engins',ar:'نقل الآليات',em:'🚜'},{id:'betail',ar:'نقل المواشي',em:'🐄'},{id:'special',ar:'نقل استثنائي',em:'🚛'},
+];
+const catEm = id => (CATS.find(c=>c.id===id)||{em:'🚚'}).em;
+const catAr = id => (CATS.find(c=>c.id===id)||{ar:'نقل'}).ar;
+
+let CU=null, TAB='offre', FCAT='all', FSEARCH='', PT='offre', _photoFile=null, _photoData=null;
+
+let DEMO_ANN = [
+  {id:1,type:'offre',categorie:'frigo',titre:'كاميو مبرّد 10 طن متوفر فجهة سوس',ville_depart:'أكادير',ville_arrivee:'كاع المغرب',date_souhaitee:'متوفر دابا',prix:null,unite:'حسب المسافة',description:'كاميو مبرّد، درجة الحرارة مضبوطة، مناسب للخضرة، الحوت والمنتجات الطرية. خدمة 24/24.',type_vehicule:'كاميو مبرّد',telephone:'212661112233',nom:'النقل السريع',note:4.9,premium:true,nb_vues:124,created_at:new Date(Date.now()-3600e3).toISOString()},
+  {id:2,type:'offre',categorie:'kira',titre:'فوركون متوفر مع السائق داخل كازا والنواحي',ville_depart:'الدار البيضاء',ville_arrivee:'النواحي',date_souhaitee:'متوفر',prix:400,unite:'د/اليوم',description:'فوركون كبير مع سائق، مناسب للتوصيل ونقل البضائع الخفيفة. كراء باليوم ولا بالخدمة.',type_vehicule:'فوركون',telephone:'212662223344',nom:'كريم',note:4.8,premium:false,nb_vues:88,created_at:new Date(Date.now()-5*3600e3).toISOString()},
+  {id:3,type:'offre',categorie:'personnel',titre:'ميني بيس 30 بلاصة لنقل العمال',ville_depart:'الدار البيضاء',ville_arrivee:'النواحي',date_souhaitee:'كل يوم',prix:null,unite:'حسب الاتفاق',description:'ميني بيس مكيّف، سائق متمرّس، نقل العمال للمعامل والأوراش يومياً. تعاقد شهري ممكن.',type_vehicule:'ميني بيس',telephone:'212663334455',nom:'شركة الراحة',note:4.7,premium:false,nb_vues:51,created_at:new Date(Date.now()-3*864e5).toISOString()},
+  {id:4,type:'offre',categorie:'stockage',titre:'مستودع مغطّى 300م² للكراء',ville_depart:'طنجة',ville_arrivee:'',date_souhaitee:'متوفر',prix:6000,unite:'د/الشهر',description:'مستودع نظيف ومؤمّن، باب كبير يدخل الكاميو، كهرباء وماء، حراسة 24/24.',type_vehicule:'مستودع',telephone:'212664445566',nom:'لوجيستيك طنجة',note:4.9,premium:true,nb_vues:203,created_at:new Date(Date.now()-7*864e5).toISOString()},
+  {id:5,type:'demande',categorie:'marchandise',titre:'بغيت ننقل 5 طن ديال الخضرة من أكادير لكازا',ville_depart:'أكادير',ville_arrivee:'الدار البيضاء',date_souhaitee:'05/06/2026',prix:1800,unite:'درهم',description:'5 طن ديال الخضرة، خاصني كاميو نظيف. التحميل والتفريغ على حسابي. نهار الخميس فالصباح.',type_vehicule:'كاميو',telephone:'212665556677',nom:'يوسف',note:4.6,premium:false,nb_vues:40,urgent:true,created_at:new Date(Date.now()-2*3600e3).toISOString()},
+  {id:6,type:'demande',categorie:'demenagement',titre:'باغي نقل أثاث ديال دار من فاس للرباط',ville_depart:'فاس',ville_arrivee:'الرباط',date_souhaitee:'10/06/2026',prix:1200,unite:'درهم',description:'دار متوسطة: صالون، فريكو، ماشين... خاصني ناس باش يشدو ويحطو. الطابق الثاني بلا أصانصير.',type_vehicule:'كاميو متوسط',telephone:'212666667788',nom:'سعاد',note:4.4,premium:false,nb_vues:22,created_at:new Date(Date.now()-864e5).toISOString()},
+  {id:7,type:'demande',categorie:'livraison',titre:'محتاج موصّل يومي لطلبيات E-commerce',ville_depart:'مراكش',ville_arrivee:'داخل المدينة',date_souhaitee:'تعاقد دائم',prix:null,unite:'حسب العرض',description:'متجر إلكتروني، خاصنا موصّل بموطور ولا فوركون صغير، 20-40 طلبية فاليوم داخل مراكش.',type_vehicule:'موطور / فوركون',telephone:'212667778899',nom:'متجر أصالة',note:4.5,premium:false,nb_vues:67,urgent:true,created_at:new Date(Date.now()-864e5).toISOString()},
+];
+let _nextDemo = 100;
+
+function toast(m,d=2200){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),d)}
+function fmtDate(d){if(!d)return'';const dt=new Date(d),now=new Date(),diff=Math.floor((now-dt)/60000);if(isNaN(diff))return d;if(diff<1)return'الآن';if(diff<60)return diff+'د';if(diff<1440)return Math.floor(diff/60)+'س';return Math.floor(diff/1440)+'ي'}
+function prixTxt(a){ if(a.prix==null||a.prix==='') return (a.unite&&a.unite!=='درهم')?a.unite:'حسب الاتفاق'; return a.prix+' <small>'+(a.unite||'درهم')+'</small>'; }
+function esc(s){return (s==null?'':String(s)).replace(/</g,'&lt;')}
+
+const SVG={
+  pin:'<svg viewBox="0 0 24 24" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>',
+  box:'<svg viewBox="0 0 24 24" stroke-width="2"><path d="m21 8-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8"/></svg>',
+  cal:'<svg viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
+  cash:'<svg viewBox="0 0 24 24" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>',
+  truck:'<svg viewBox="0 0 24 24" stroke-width="2"><path d="M1 6h13v9H1zM14 9h4l3 3v3h-7"/><circle cx="6" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/></svg>',
+  star:'<svg viewBox="0 0 24 24"><path d="m12 2 3 6.5 7 .6-5.3 4.6 1.6 6.8L12 17l-6.3 3.5 1.6-6.8L2 9.1l7-.6z"/></svg>',
+  wa:'<svg viewBox="0 0 24 24" fill="#fff"><path d="M.057 24l1.687-6.163a11.867 11.867 0 0 1-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.82 11.82 0 0 1 8.413 3.488 11.82 11.82 0 0 1 3.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 0 1-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.82 9.82 0 0 0 1.51 5.26l-.999 3.648 3.978-1.025z"/></svg>',
+  phone:'<svg viewBox="0 0 24 24" stroke="#fff" fill="none" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',
+  flag:'<svg viewBox="0 0 24 24" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/></svg>',
+  share:'<svg viewBox="0 0 24 24" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5 8.6 10.5"/></svg>',
+  back:'<svg viewBox="0 0 24 24" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>',
+  heart:'<svg viewBox="0 0 24 24" stroke-width="2"><path d="M20.8 4.6a5 5 0 0 0-7 0L12 6.3l-1.7-1.7a5 5 0 1 0-7 7L12 20l8.8-8.4a5 5 0 0 0 0-7z"/></svg>',
+  chart:'<svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 3v18h18M7 14l3-3 4 4 5-6"/></svg>',
+  star2:'<svg viewBox="0 0 24 24" stroke-width="2"><path d="m12 2 3 6.5 7 .6-5.3 4.6 1.6 6.8L12 17l-6.3 3.5 1.6-6.8L2 9.1l7-.6z"/></svg>',
+  logout:'<svg viewBox="0 0 24 24" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>',
+};
+
+setTimeout(()=>{ document.getElementById('splash').classList.add('out'); checkAuth(); }, 1800);
+
+function checkAuth(){ const u=localStorage.getItem('naql_user'); if(u){CU=JSON.parse(u);showApp();}else{goScreen('auth');} }
+function showApp(){
+  document.getElementById('bnav').classList.remove('hidden');
+  document.getElementById('fab').classList.remove('hidden');
+  buildCats(); goScreen('home'); loadAnnonces();
+  if(DEMO) document.getElementById('config-banner').innerHTML='<div class="config-banner">🟡 وضع تجريبي — ربط Supabase باش تخزن الإعلانات بصح</div>';
+}
+
+function switchAuth(t){
+  document.getElementById('form-login').style.display=t==='login'?'':'none';
+  document.getElementById('form-register').style.display=t==='register'?'':'none';
+  document.querySelectorAll('.auth-tab-btn').forEach((b,i)=>b.classList.toggle('active',(t==='login'&&i===0)||(t==='register'&&i===1)));
+  document.getElementById('auth-error').classList.remove('show');
+}
+function showErr(m){const e=document.getElementById('auth-error');e.textContent=m;e.classList.add('show')}
+
+async function login(){
+  const tel=document.getElementById('login-tel').value.trim(), nom=document.getElementById('login-nom').value.trim();
+  if(!tel||!nom){showErr('عمّر جميع الخانات');return}
+  if(DEMO){CU={id:'demo',nom,telephone:tel,region:'',type_user:'client',nb_annonces:0,note:null};localStorage.setItem('naql_user',JSON.stringify(CU));showApp();return;}
+  try{
+    const {data,error}=await sb.from('users_naql').select('*').eq('telephone',tel).eq('nom',nom).single();
+    if(error||!data){showErr('رقم الهاتف أو الاسم غير صحيح');return}
+    CU=data;localStorage.setItem('naql_user',JSON.stringify(CU));showApp();
+  }catch(e){showErr('خطأ فالاتصال')}
+}
+async function register(){
+  const nom=document.getElementById('reg-nom').value.trim(), tel=document.getElementById('reg-tel').value.trim(),
+        reg=document.getElementById('reg-region').value, type=document.getElementById('reg-type').value;
+  if(!nom||!tel||!reg){showErr('عمّر جميع الخانات');return}
+  if(tel.length<9){showErr('رقم الهاتف ماشي صحيح');return}
+  if(DEMO){CU={id:'demo',nom,telephone:tel,region:reg,type_user:type,nb_annonces:0,note:null};localStorage.setItem('naql_user',JSON.stringify(CU));showApp();return;}
+  try{
+    const {data:ex}=await sb.from('users_naql').select('id').eq('telephone',tel).single();
+    if(ex){showErr('هاد الرقم مسجّل من قبل');return}
+    const {data,error}=await sb.from('users_naql').insert({nom,telephone:tel,region:reg,type_user:type,premium:false,nb_annonces:0,note:null}).select().single();
+    if(error){showErr('خطأ فالتسجيل');return}
+    CU=data;localStorage.setItem('naql_user',JSON.stringify(CU));showApp();
+  }catch(e){showErr('خطأ فالاتصال')}
+}
+function logout(){CU=null;localStorage.removeItem('naql_user');document.getElementById('bnav').classList.add('hidden');document.getElementById('fab').classList.add('hidden');goScreen('auth')}
+
+function goScreen(s){
+  document.querySelectorAll('.screen').forEach(el=>el.classList.remove('active'));
+  document.getElementById('sc-'+s).classList.add('active');
+  window.scrollTo(0,0);
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(s==='home') document.getElementById('ni-home').classList.add('active');
+}
+
+function buildCats(){
+  document.getElementById('cats').innerHTML=CATS.map(c=>`<button class="cat-chip ${FCAT===c.id?'on':''}" onclick="setCat('${c.id}')"><span class="ic">${c.em}</span><span>${c.ar}</span></button>`).join('');
+  document.getElementById('pub-cat').innerHTML=CATS.filter(c=>c.id!=='all').map(c=>`<option value="${c.id}">${c.em} ${c.ar}</option>`).join('');
+}
+function setTab(t){TAB=t;document.getElementById('tab-off').classList.toggle('active',t==='offre');document.getElementById('tab-dem').classList.toggle('active',t==='demande');loadAnnonces();}
+function setCat(c){FCAT=c;buildCats();loadAnnonces();}
+let _searchT; function onSearch(v){FSEARCH=v;clearTimeout(_searchT);_searchT=setTimeout(loadAnnonces,250);}
+function skeleton(el){el.innerHTML=Array(4).fill(0).map(()=>`<div class="skel-card"><div class="skeleton skel-img"></div><div style="padding:11px"><div class="skeleton skel-line"></div><div class="skeleton skel-line short"></div></div></div>`).join('');}
+
+async function loadAnnonces(){
+  const el=document.getElementById('ann-list');skeleton(el);
+  let list=[];
+  if(DEMO){ list=DEMO_ANN.filter(a=>a.type===TAB); }
+  else{ try{ let q=sb.from('annonces_naql').select('*').eq('type',TAB).eq('actif',true).order('premium',{ascending:false}).order('created_at',{ascending:false}).limit(50); if(FCAT!=='all')q=q.eq('categorie',FCAT); const {data}=await q; list=data||[]; }catch(e){list=[];} }
+  if(FCAT!=='all')list=list.filter(a=>a.categorie===FCAT);
+  if(FSEARCH){const s=FSEARCH.trim();list=list.filter(a=>((a.titre||'')+(a.ville_depart||'')+(a.ville_arrivee||'')+(a.nom||'')+catAr(a.categorie)).includes(s));}
+  renderList(el,list);
+}
+function renderList(el,list){ el.innerHTML = list.length? list.map(card).join('') : `<div class="empty"><div class="ic">📭</div><p>ما كاينش إعلانات هنا دابا.<br>كون أول واحد وانشر إعلانك!</p></div>`; }
+function card(a){
+  const dem=a.type==='demande';
+  const route=a.ville_arrivee?`${esc(a.ville_depart)} ← ${esc(a.ville_arrivee)}`:esc(a.ville_depart);
+  const pp=a.photo_url?`<img src="${a.photo_url}">`:catEm(a.categorie);
+  return `<div class="ann-card ${dem?'dem':''}" onclick="openDetail('${a.id}')">
+    <div class="ann-pp ${dem?'dem':''}">${pp}<span class="ann-tag ${dem?'dem':'off'}">${dem?'طلب':'عرض'}</span>${a.urgent?'<span class="ann-urgent">⚡ مستعجل</span>':''}</div>
+    <div class="ann-body"><h4 class="ann-titre">${esc(a.titre)}</h4>
+      <div class="ann-route">${SVG.pin} ${route}</div>
+      <div class="ann-foot">${a.premium?`<span class="ann-verif">${SVG.star} موثّق</span>`:`<span>${fmtDate(a.created_at)}</span>`}<span>· ${catAr(a.categorie)}</span><span class="ann-prix">${prixTxt(a)}</span></div>
+    </div></div>`;
+}
+
+async function openDetail(id){
+  let a;
+  if(DEMO){a=DEMO_ANN.find(x=>String(x.id)===String(id));}
+  else{ try{const {data}=await sb.from('annonces_naql').select('*').eq('id',id).single();a=data;if(data)sb.from('annonces_naql').update({nb_vues:(data.nb_vues||0)+1}).eq('id',id).then(()=>{});}catch(e){} }
+  if(!a){toast('الإعلان ماكاينش');return;}
+  const dem=a.type==='demande', tel=(a.telephone||'').replace(/[^0-9]/g,'');
+  const wa=encodeURIComponent(`السلام، شفت إعلانك "${a.titre}" فسوق النقل واللوجستيك، بغيت نعرف التفاصيل.`);
+  const pp=a.photo_url?`<img src="${a.photo_url}">`:catEm(a.categorie);
+  const prix=(a.prix!=null&&a.prix!=='')?`${a.prix} ${a.unite||'درهم'}`:(a.unite||'حسب الاتفاق');
+  document.getElementById('sc-detail').innerHTML=`
+    <div class="detail-hero" style="background:linear-gradient(135deg,${dem?'#fff7ed,#fed7aa':'#e3f2fd,#bbdefb'})">${pp}
+      <button class="dh-btn dh-back" onclick="goScreen('home')">${SVG.back}</button>
+      <button class="dh-btn dh-share" onclick="shareAnn('${a.id}')">${SVG.share}</button></div>
+    <div class="detail-body">
+      <span class="d-tag ${dem?'dem':'off'}">${dem?'طلب نقل':'عرض خدمة'}</span>
+      <h1 class="d-title">${esc(a.titre)}</h1>
+      <div class="d-row"><span class="ic">${SVG.pin}</span><div><div class="lbl">المسار</div><div class="val">${a.ville_arrivee?esc(a.ville_depart)+' → '+esc(a.ville_arrivee):esc(a.ville_depart)}</div></div></div>
+      <div class="d-row"><span class="ic">${SVG.truck}</span><div><div class="lbl">القسم / المركبة</div><div class="val">${catAr(a.categorie)}${a.type_vehicule?' · '+esc(a.type_vehicule):''}</div></div></div>
+      <div class="d-row"><span class="ic">${SVG.cal}</span><div><div class="lbl">التاريخ</div><div class="val">${esc(a.date_souhaitee)||'متوفر'}</div></div></div>
+      <div class="d-row"><span class="ic">${SVG.cash}</span><div><div class="lbl">${dem?'الميزانية':'الثمن'}</div><div class="val" style="color:var(--bleu2)">${esc(prix)}</div></div></div>
+      <div class="d-desc">${esc(a.description)||'بلا تفاصيل إضافية.'}</div>
+      <div class="profile-mini"><div class="avatar">${esc((a.nom||'؟').charAt(0))}</div>
+        <div><div style="font-weight:700">${esc(a.nom)||'مستخدم'}</div><div class="stars">${a.note?'★'.repeat(Math.round(a.note))+'☆'.repeat(5-Math.round(a.note))+' '+a.note:'جديد'}</div></div>
+        <div style="margin-inline-start:auto;font-size:.72rem;color:var(--gris)">${fmtDate(a.created_at)}</div></div>
+    </div>
+    <div class="contact-bar">
+      <a class="cbtn btn-wa" href="https://wa.me/${tel}?text=${wa}" target="_blank">${SVG.wa} واتساب</a>
+      <a class="cbtn btn-call" href="tel:+${tel}">${SVG.phone} عيّط</a>
+      <button class="cbtn ghost" onclick="toast('شكراً، تم التبليغ')">${SVG.flag}</button>
+    </div>`;
+  goScreen('detail');
+}
+function shareAnn(id){
+  const a=DEMO?DEMO_ANN.find(x=>String(x.id)===String(id)):null;
+  const txt=`${a?a.titre:'إعلان'} — سوق النقل واللوجستيك`;
+  if(navigator.share){navigator.share({title:'سوق النقل',text:txt,url:location.href}).catch(()=>{});}
+  else{navigator.clipboard&&navigator.clipboard.writeText(txt);toast('تم نسخ الإعلان');}
+}
+
+function setPubType(t){PT=t;const off=t==='offre';
+  document.getElementById('pt-off').classList.toggle('active-off',off);
+  document.getElementById('pt-dem').classList.toggle('active-dem',!off);
+  document.getElementById('lbl-from').textContent=off?'مدينة التوفّر':'مدينة الانطلاق';
+  document.getElementById('lbl-to').textContent=off?'المناطق المغطّاة':'مدينة الوصول';
+  document.getElementById('lbl-veh').textContent=off?'نوع المركبة':'الوزن / نوع البضاعة';
+}
+function onPhoto(input){const f=input.files[0];if(!f)return;_photoFile=f;const r=new FileReader();r.onload=e=>{_photoData=e.target.result;document.getElementById('photo-zone').innerHTML=`<img src="${_photoData}"><div style="margin-top:6px">تبدّل التصويرة</div>`;};r.readAsDataURL(f);}
+
+async function publish(){
+  const titre=document.getElementById('pub-titre').value.trim(), from=document.getElementById('pub-from').value.trim();
+  if(!titre||!from){toast('عمّر العنوان والمدينة على الأقل');return;}
+  const rec={ type:PT, categorie:document.getElementById('pub-cat').value, titre,
+    ville_depart:from, ville_arrivee:document.getElementById('pub-to').value.trim(),
+    type_vehicule:document.getElementById('pub-veh').value.trim(),
+    date_souhaitee:document.getElementById('pub-date').value.trim()||'متوفر',
+    prix:document.getElementById('pub-prix').value||null, unite:document.getElementById('pub-unite').value,
+    description:document.getElementById('pub-desc').value.trim(),
+    telephone:CU.telephone, nom:CU.nom, user_id:CU.id, actif:true, premium:false, nb_vues:0, note:CU.note||null };
+  const btn=document.getElementById('pub-submit');btn.textContent='كنشر...';btn.disabled=true;
+  if(DEMO){ rec.id=_nextDemo++;rec.created_at=new Date().toISOString();rec.photo_url=_photoData||null;DEMO_ANN.unshift(rec);finishPublish(rec.id); }
+  else{ try{
+      if(_photoFile){const path='ann/'+Date.now()+'_'+(CU.id||'x');const {data:up,error:ue}=await sb.storage.from('photos_naql').upload(path,_photoFile,{upsert:true});if(!ue)rec.photo_url=sb.storage.from('photos_naql').getPublicUrl(up.path).data.publicUrl;}
+      const {data,error}=await sb.from('annonces_naql').insert(rec).select().single();
+      if(error){toast('خطأ فالنشر');btn.textContent='نشر الإعلان دابا';btn.disabled=false;return;}
+      sb.from('users_naql').update({nb_annonces:(CU.nb_annonces||0)+1}).eq('id',CU.id).then(()=>{});
+      finishPublish(data.id);
+    }catch(e){toast('خطأ فالاتصال');btn.textContent='نشر الإعلان دابا';btn.disabled=false;} }
+}
+function finishPublish(id){
+  const btn=document.getElementById('pub-submit');btn.textContent='نشر الإعلان دابا';btn.disabled=false;
+  ['pub-titre','pub-from','pub-to','pub-veh','pub-date','pub-prix','pub-desc'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('photo-zone').innerHTML='<svg viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg><div>زيد تصويرة (اختياري)</div>';
+  _photoFile=null;_photoData=null;toast('✅ تم نشر إعلانك');openDetail(id);
+}
+
+function loadProfile(){
+  document.getElementById('sc-profile').innerHTML=`
+    <div class="prof-head"><div class="avatar">${esc((CU.nom||'؟').charAt(0))}</div><h3>${esc(CU.nom)}</h3>
+      <div class="sub">${CU.type_user==='transporteur'?'ناقل':CU.type_user==='societe'?'شركة نقل':'زبون'} ${CU.region?'· '+esc(CU.region):''}</div></div>
+    <div class="prof-stats"><div class="pstat"><b>${CU.nb_annonces||0}</b><span>إعلانات</span></div><div class="pstat"><b>${CU.note||'—'}</b><span>التقييم</span></div><div class="pstat"><b>${CU.telephone?'✓':'—'}</b><span>الهاتف</span></div></div>
+    <div class="menu-item" onclick="loadMine()"><span class="ic">${SVG.box}</span><span>إعلاناتي</span><span class="arr">${SVG.back}</span></div>
+    <div class="menu-item" onclick="toast('قريباً')"><span class="ic">${SVG.heart}</span><span>المحفوظات</span><span class="arr">${SVG.back}</span></div>
+    <div class="menu-item" onclick="toast('قريباً')"><span class="ic">${SVG.chart}</span><span>إحصائيات (للمحترفين)</span><span class="arr">${SVG.back}</span></div>
+    <div class="menu-item" onclick="toast('قريباً')"><span class="ic">${SVG.star2}</span><span>الترقية لحساب موثّق</span><span class="arr">${SVG.back}</span></div>
+    <div class="menu-item" onclick="logout()"><span class="ic">${SVG.logout}</span><span>خروج</span><span class="arr">${SVG.back}</span></div>
+    <div style="text-align:center;color:var(--gris);font-size:.7rem;margin:18px 0 90px">سوق النقل واللوجستيك · 1.0</div>`;
+  goScreen('profile');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.getElementById('ni-prof').classList.add('active');
+}
+async function loadMine(){
+  let list=[];
+  if(DEMO){list=DEMO_ANN.filter(a=>a.telephone===CU.telephone);}
+  else{ try{const {data}=await sb.from('annonces_naql').select('*').eq('user_id',CU.id).order('created_at',{ascending:false});list=data||[];}catch(e){} }
+  document.getElementById('sc-profile').innerHTML=`
+    <div class="pub-header"><button onclick="loadProfile()">${SVG.back}</button><span class="pub-title">إعلاناتي</span></div>
+    <div class="content" style="padding-top:14px">${list.length?list.map(card).join(''):`<div class="empty"><div class="ic">📭</div><p>ما عندكش إعلانات بعد.</p><button class="btn-primary btn-gold" style="max-width:220px;margin:16px auto 0" onclick="openSheet()">+ انشر إعلانك الأول</button></div>`}</div>`;
+  goScreen('profile');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.getElementById('ni-mine').classList.add('active');
+}
+
+function openSheet(){
+  const ov=document.createElement('div');ov.className='sheet-ov';
+  ov.onclick=e=>{if(e.target===ov)ov.remove()};
+  ov.innerHTML=`<div class="sheet"><div class="grab"></div><h3>شنو بغيت تنشر؟</h3>
+    <div class="sheet-opt" onclick="this.closest('.sheet-ov').remove();startPub('offre')"><span class="ic" style="background:var(--bleup)">🚛</span><div><b>عرض خدمة / مركبة</b><span>أنا ناقل وكنقدّم خدمة</span></div></div>
+    <div class="sheet-opt" onclick="this.closest('.sheet-ov').remove();startPub('demande')"><span class="ic" style="background:var(--orp)">📦</span><div><b>طلب نقل</b><span>عندي حمولة وباغي ناقل</span></div></div>
+    <div class="sheet-opt" onclick="this.closest('.sheet-ov').remove();startPub('offre');document.getElementById('pub-cat').value='stockage'"><span class="ic" style="background:var(--gris2p)">🏬</span><div><b>مستودع / تخزين</b><span>عندي فضاء للكراء</span></div></div></div>`;
+  document.body.appendChild(ov);
+}
+function startPub(t){setPubType(t);goScreen('publish');}
+
+if('serviceWorker' in navigator){navigator.serviceWorker.register('service-worker.js').catch(()=>{});}
+</script>
+</body>
+</html>
